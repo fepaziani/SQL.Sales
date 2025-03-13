@@ -1,0 +1,33 @@
+WITH RankedSales AS (
+    SELECT 
+        SalesPersonID,
+        SaleAmount,
+        SaleDate,
+        RANK() OVER (PARTITION BY SalesPersonID ORDER BY SaleAmount DESC) AS SaleRank
+    FROM 
+        Sales
+    WHERE 
+        SaleDate BETWEEN '2023-01-01' AND '2023-12-31'
+),
+TopSalesPerPerson AS (
+    SELECT 
+        SalesPersonID,
+        SaleAmount,
+        SaleDate
+    FROM 
+        RankedSales
+    WHERE 
+        SaleRank = 1
+)
+SELECT 
+    sp.SalesPersonID,
+    sp.Name,
+    sp.Region,
+    tsp.SaleAmount AS TopSaleAmount,
+    tsp.SaleDate AS TopSaleDate
+FROM 
+    SalesPeople sp
+JOIN 
+    TopSalesPerPerson tsp ON sp.SalesPersonID = tsp.SalesPersonID
+ORDER BY 
+    sp.Region, TopSaleAmount DESC;
